@@ -1,0 +1,40 @@
+version: "3.9"
+
+x-settings: &default-env
+  POSTGRES_HOST: auction_postgres
+  POSTGRES_USER: action_user
+  POSTGRES_PASSWORD: qh8dJDkGc91n
+  POSTGRES_DB: auction
+  POSTGRES_PORT: 5432
+  POSTGRES_HOST_AUTH_METHOD: trust
+
+services:
+  db:
+    container_name: auction_postgres
+    image: postgres:latest
+    environment:
+      <<: *default-env
+      PGDATA: /data/postgres
+    volumes:
+      - pg:/data/postgres
+    ports:
+      - 5432:5432
+    restart: unless-stopped
+
+  api:
+    container_name: auction_api
+    build: ./app
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./app:/code
+    ports:
+      - 80:8000
+    depends_on:
+      - db
+    environment:
+      <<: *default-env
+      DEBUG: 1
+    restart: unless-stopped
+
+volumes:
+  pg:
