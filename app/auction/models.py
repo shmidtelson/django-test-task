@@ -5,24 +5,39 @@ from django.dispatch import receiver
 
 
 class OwnerMixin(models.Model):
-    owner = models.ForeignKey('Profile', on_delete=models.SET_NULL, null=True, blank=True)
+    owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
         abstract = True
 
 
 class Item(OwnerMixin):
+    EZHIK = 0
+    CAT = 1
+    TYPES = [
+        (EZHIK, 'Ezhik'),
+        (CAT, 'Cat'),
+    ]
     breed = models.CharField(max_length=200)
     nickname = models.CharField(max_length=200)
+    type = models.CharField(max_length=3, choices=TYPES, default=EZHIK)
 
 
 class Lot(OwnerMixin):
     item = models.ForeignKey('Item', on_delete=models.SET_NULL, null=True, blank=True)
     cost = models.DecimalField(max_digits=6, decimal_places=2)
+    finished_bet = models.ForeignKey(
+        'Bet',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='bet_finished'
+    )
 
 
 class Bet(OwnerMixin):
     value = models.DecimalField(max_digits=6, decimal_places=2)
+    lot = models.ForeignKey('Lot', on_delete=models.SET_NULL, null=True, blank=True)
 
 
 class Profile(models.Model):

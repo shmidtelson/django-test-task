@@ -15,23 +15,23 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'profile', 'is_staff', 'url', 'username', 'email')
-        read_only_fields = ('id', 'profile', 'is_staff')
+        fields = ('id', 'profile', 'is_staff', 'url', 'username', 'email',)
+        read_only_fields = ('id', 'profile', 'is_staff',)
 
 
 class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
-        fields = ['breed', 'nickname', 'owner']
-
-
-class LotSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Lot
-        fields = ['item', 'cost', 'owner']
+        fields = ('id', 'breed', 'nickname', 'owner', 'type',)
 
 
 class BetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bet
-        fields = ['value', 'owner']
+        fields = ('id', 'value', 'owner', 'lot',)
+
+
+class LotSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lot
+        fields = ('id', 'item', 'cost', 'owner', 'finished_bet',)

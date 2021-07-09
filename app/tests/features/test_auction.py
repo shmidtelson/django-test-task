@@ -1,35 +1,75 @@
-from django.contrib.auth.models import User
 from django.test import TestCase
+
+from auction.models import Item, Lot
 from tests.testing_utilities import ApiUtility
 
 
 class AuctionProcessTestCase(TestCase):
     def setUp(self):
         self.api_utility = ApiUtility()
-        user1 = self.api_utility.register_user()
-        print(user1)
-        print(User.objects.all())
-        pass
-        # self.user_seller1 = User.objects.create(name='John')
-        # self.user_seller2 = User.objects.create(name='John')
-        #
-        # self.user_customer1 = User.objects.create(name='John')
-        # self.user_customer2 = User.objects.create(name='John')
+
+        # User
+        self.user_seller1 = self.api_utility.register_user()
+        self.user_seller2 = self.api_utility.register_user()
+
+        # Customer
+        self.user_customer1 = self.api_utility.register_user()
+        self.user_customer2 = self.api_utility.register_user()
+
+        # Items
+        self.item_of_user_seller1 = self.api_utility.register_item(
+            user_id=self.user_seller1.get('id'),
+            item_type=Item.EZHIK
+        )
+        self.item_of_user_seller2 = self.api_utility.register_item(
+            user_id=self.user_seller2.get('id'),
+            item_type=Item.CAT
+        )
 
     def test_users_creates_lots_to_sell(self):
         """
         1. Пользователи выставляют лоты на продажу
         """
-        self.assertTrue(0)
+        self.lot_of_user_seller1 = self.api_utility.register_lot(
+            user_id=self.user_seller1.get('id'),
+            item_id=self.item_of_user_seller1.get('id'),
+        )
+        self.lot_of_user_seller2 = self.api_utility.register_lot(
+            user_id=self.user_seller2.get('id'),
+            item_id=self.item_of_user_seller2.get('id'),
+        )
 
-    def test_other_users_can_do_bet_to_lot(self):
+        self.assertEqual(self.lot_of_user_seller1.get('owner'), self.user_seller1.get('id'), 'Lot1 created')
+        self.assertEqual(self.lot_of_user_seller2.get('owner'), self.user_seller2.get('id'), 'Lot2 created')
+
         """
         2. Другие пользователи могут сделать ставку на лот
         """
-        pass
+        self.bet_of_user_customer1 = self.api_utility.register_bet(
+            user_id=self.user_customer1.get('id'),
+            lot_id=self.lot_of_user_seller1.get('id'),
+        )
+        self.bet_of_user_customer2 = self.api_utility.register_bet(
+            user_id=self.user_customer2.get('id'),
+            lot_id=self.lot_of_user_seller2.get('id'),
+        )
+        self.assertEqual(self.bet_of_user_customer1.get('owner'), self.user_customer1.get('id'), 'Bet1 created')
+        self.assertEqual(self.bet_of_user_customer2.get('owner'), self.user_customer2.get('id'), 'Bet2 created')
 
-    def test_author_of_lot_apply_one_any_bet(self):
         """
         3. Автор лота принимает одну любую ставку
         """
-        pass
+        self.apply_bet_user_seller1 = self.api_utility.apply_bet(
+            bet_id=self.bet_of_user_customer1.get('id'),
+            lot_id=self.lot_of_user_seller1.get('id'),
+        )
+        self.apply_bet_user_seller2 = self.api_utility.apply_bet(
+            bet_id=self.bet_of_user_customer2.get('id'),
+            lot_id=self.lot_of_user_seller2.get('id'),
+        )
+
+        lot1 = Lot.objects.filter(id=self.lot_of_user_seller1.get('id')).first()
+        lot2 = Lot.objects.filter(id=self.lot_of_user_seller2.get('id')).first()
+
+        self.assertEqual(lot1.finished_bet.id, self.bet_of_user_customer1.get('id'), 'Lot1 finished')
+        self.assertEqual(lot2.finished_bet.id, self.bet_of_user_customer2.get('id'), 'Lot2 finished')
