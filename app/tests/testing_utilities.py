@@ -37,9 +37,9 @@ class ApiUtility:
 
         return self.__register(data, 'items')
 
-    def register_bet(self, user_id: int, lot_id: int) -> dict:
+    def register_bet(self, user_id: int, lot_id: int, value: float = None) -> dict:
         data = {
-            "value": self.faker.pydecimal(left_digits=3, right_digits=2, positive=True),
+            "value": value if value else self.faker.pydecimal(left_digits=3, right_digits=2, positive=True),
             "owner": user_id,
             "lot": lot_id
         }

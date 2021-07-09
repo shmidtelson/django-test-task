@@ -30,6 +30,16 @@ class BetSerializer(serializers.ModelSerializer):
         model = Bet
         fields = ('id', 'value', 'owner', 'lot',)
 
+    def validate(self, data):
+        if data.get('value') <= data.get('lot').cost:
+            raise serializers.ValidationError("Bet value doesnt be less or equal than lot cost")
+
+        last_bet = Bet.objects.order_by('-value').filter(lot=data.get('lot').id).first()
+
+        if last_bet and data.get('value') <= last_bet.value:
+            raise serializers.ValidationError("Bet value doesnt be less or equal than last bet")
+        return data
+
 
 class LotSerializer(serializers.ModelSerializer):
     class Meta:
