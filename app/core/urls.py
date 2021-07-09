@@ -15,8 +15,21 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework import routers
+
+from auction.views import UserViewSet, BetViewSet, LotViewSet, ItemViewSet
+
+# Routers provide an easy way of automatically determining the URL conf.
+from core.settings import API_PREFIX
+
+router = routers.DefaultRouter()
+router.register(r'users', UserViewSet)
+router.register(r'bets', BetViewSet)
+router.register(r'lots', LotViewSet)
+router.register(r'items', ItemViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api-auth/', include('rest_framework.urls'))
+    path(API_PREFIX, include(router.urls)),
+    path(f'{API_PREFIX}auth/', include('rest_framework.urls'))
 ]
