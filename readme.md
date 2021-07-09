@@ -1,4 +1,4 @@
-# Test task for local.org
+# Test task
 
 ## Install
 * Run project `docker-compose up -d`
