@@ -1,5 +1,9 @@
+from decimal import Decimal
+
 from faker import Faker
 from rest_framework.test import APIClient
+
+from auction.models import Profile
 from core.settings import API_PREFIX
 
 
@@ -57,6 +61,11 @@ class ApiUtility:
         )
 
         return response.json()
+
+    @staticmethod
+    def update_balance(user_id: int, balance):
+        Profile.objects.filter(user_id=user_id) \
+            .update(balance=Decimal(balance))
 
     def __register(self, data: dict, endpoint: str) -> dict:
         response = self.api_client.post(self.__get_endpoint(endpoint), data, format='json')

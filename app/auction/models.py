@@ -12,15 +12,15 @@ class OwnerMixin(models.Model):
 
 
 class Item(OwnerMixin):
-    EZHIK = 0
+    HEDGEHOG = 0
     CAT = 1
     TYPES = [
-        (EZHIK, 'Ezhik'),
+        (HEDGEHOG, 'Hedgehog'),
         (CAT, 'Cat'),
     ]
     breed = models.CharField(max_length=200)
     nickname = models.CharField(max_length=200)
-    type = models.CharField(max_length=3, choices=TYPES, default=EZHIK)
+    type = models.IntegerField(choices=TYPES, default=HEDGEHOG)
 
 
 class Lot(OwnerMixin):
@@ -33,6 +33,22 @@ class Lot(OwnerMixin):
         blank=True,
         related_name='bet_finished'
     )
+
+    def last_bet(self):
+        return Bet.objects.order_by('-value')\
+            .filter(lot=self.id).first()
+
+    def close_lot(self):
+        self.finished_bet = self.last_bet()
+
+        if self.finished_bet is None:
+            raise ValueError('You cannot close this lot')
+
+        # Change balance
+        self.finished_bet.owner.profile.balance = self.finished_bet.owner.profile.balance - self.finished_bet.value
+        self.finished_bet.owner.profile.save()
+
+        self.save()
 
 
 class Bet(OwnerMixin):
